@@ -1,3 +1,5 @@
 # We don't want to commit the generated binaries.
 main
 disemvowel_test
+
+.vscode/**
