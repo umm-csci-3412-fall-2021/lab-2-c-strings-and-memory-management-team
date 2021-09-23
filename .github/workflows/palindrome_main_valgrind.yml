@@ -1,0 +1,37 @@
+name: palindrome-main-valgrind
+
+on: [push, pull_request]
+#    paths:
+#    - 'palindrome/**'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Cache gtest library
+      uses: actions/cache@v2
+      env:
+        cache-name: cache-gtest-lib
+      with:
+        key: $${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('/usr/local/lib/libgtest.a') }}
+        path: /usr/local/lib/libgtest.a
+        restore-keys: |
+            ${{ runner.os }}-build-${{ env.cache-name }}-
+            ${{ runner.os }}-build-
+            ${{ runner.os }}-
+    - name: Install gtest manually
+      run: sudo apt-get install libgtest-dev && cd /usr/src/gtest && sudo cmake CMakeLists.txt && sudo make && sudo cp lib/*.a /usr/lib && sudo ln -s /usr/lib/libgtest.a /usr/local/lib/libgtest.a && sudo ln -s /usr/lib/libgtest_main.a /usr/local/lib/libgtest_main.a
+    - name: Install valgrind
+      run: sudo apt-get install -y valgrind
+    - name: Check out the code
+      uses: actions/checkout@v2
+    - name: Compile code
+      run: gcc -Wall -g -o palindrome palindrome.c main.c
+      working-directory: palindrome
+    - name: Run test
+      run: valgrind -v --leak-check=full --show-leak-kinds=all --error-exitcode=1 ./palindrome < sample_input.txt
+      working-directory: palindrome
+
+# I need to split these into two tests. Otherwise I'm pretty sure if the second succeeds that
+# will "cover" any failures on the first call to `valgrind`. Alternatively I could use `||`,
+# but splitting them will provide different badges and more focused info for students.

@@ -1,0 +1,4 @@
+# We want to ignore the two executables generated in this
+# part of the lab to reduce conflicts.
+main
+palindrome_test

@@ -1,0 +1,33 @@
+name: disemvowel-test-valgrind
+
+on: [push, pull_request]
+#    paths:
+#    - 'disemvowel/**'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Cache gtest library
+      uses: actions/cache@v2
+      env:
+        cache-name: cache-gtest-lib
+      with:
+        key: $${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('/usr/local/lib/libgtest.a') }}
+        path: /usr/local/lib/libgtest.a
+        restore-keys: |
+            ${{ runner.os }}-build-${{ env.cache-name }}-
+            ${{ runner.os }}-build-
+            ${{ runner.os }}-
+    - name: Install gtest manually
+      run: sudo apt-get install libgtest-dev && cd /usr/src/gtest && sudo cmake CMakeLists.txt && sudo make && sudo cp lib/*.a /usr/lib && sudo ln -s /usr/lib/libgtest.a /usr/local/lib/libgtest.a && sudo ln -s /usr/lib/libgtest_main.a /usr/local/lib/libgtest_main.a
+    - name: Install valgrind
+      run: sudo apt-get install -y valgrind
+    - name: Check out the code
+      uses: actions/checkout@v2
+    - name: Compile code
+      run: g++ -Wall -g -o disemvowel_test disemvowel.c disemvowel_test.cpp -lgtest -pthread -std=c++0x
+      working-directory: disemvowel
+    - name: Run test
+      run: valgrind -v --leak-check=full --show-leak-kinds=all --error-exitcode=1 ./disemvowel_test
+      working-directory: disemvowel
