@@ -2,12 +2,14 @@
 
 #include "disemvowel.h"
 
-TEST(Disemvowel, HandleEmptyString) {
-  ASSERT_STREQ("", disemvowel((char*) ""));
-}
+
 
 TEST(Disemvowel, HandleNoVowels) {
   ASSERT_STREQ("pqrst", disemvowel((char*) "pqrst"));
+}
+
+TEST(Disemvowel, HandleEmptyString) {
+  ASSERT_STREQ("", disemvowel((char*) ""));
 }
 
 TEST(Disemvowel, HandleOnlyVowels) {
